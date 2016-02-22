@@ -57,6 +57,9 @@ import org.json.JSONObject;
 
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketHandler;
+import eu.esu.mobilecontrol2.sdk.MobileControl2;
+import eu.esu.mobilecontrol2.sdk.ThrottleFragment;
+import eu.esu.mobilecontrol2.sdk.ThrottleScale;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
@@ -155,6 +158,11 @@ public class threaded_application extends Application {
 	private SharedPreferences prefs;
 
 	public boolean EStopActivated = false;  // Used to determine if user pressed the EStop button.
+
+	final boolean IS_MOBILECONTROLII = MobileControl2.isMobileControl2();
+	ThrottleFragment throttleFragment = null;
+	ThrottleScale throttleScale = null;
+
 
 	//Used to tell set_Labels in Throttle not to update padding for throttle sliders after onCreate.
 	public boolean firstCreate = true;

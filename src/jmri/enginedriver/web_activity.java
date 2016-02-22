@@ -19,6 +19,8 @@ package jmri.enginedriver;
 
 import java.lang.reflect.Method;
 
+import eu.esu.mobilecontrol2.sdk.MobileControl2;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
@@ -53,7 +55,7 @@ public class web_activity extends Activity {
   private String currentTime = "";
   private Menu WMenu;
   private boolean navigatingAway = false;		// flag for onPause: set to true when another activity is selected, false if going into background 
- 
+
   @SuppressLint("HandlerLeak")
 class web_handler extends Handler {
 

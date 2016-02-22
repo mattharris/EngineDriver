@@ -38,6 +38,10 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.lang.reflect.Method;
 
+import eu.esu.mobilecontrol2.sdk.ThrottleFragment;
+import eu.esu.mobilecontrol2.sdk.ThrottleFragment.OnThrottleListener;
+import eu.esu.mobilecontrol2.sdk.ThrottleScale;
+
 import jmri.enginedriver.logviewer.ui.LogViewerActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -493,12 +497,18 @@ public class throttle extends Activity implements android.gesture.GestureOverlay
 	// set speed slider and notify server
 	void speedUpdateAndNotify(char whichThrottle, int speed) {
 		speedUpdate(whichThrottle, speed);
+		if (mainapp.IS_MOBILECONTROLII) {
+			mainapp.throttleFragment.moveThrottle(mainapp.throttleScale.stepToPosition(speed));
+		}
 		sendSpeedMsg(whichThrottle, speed);
 	}
 
 	// change speed slider by scaled value and notify server
 	void speedChangeAndNotify(char whichThrottle, int change) {
 		int speed = speedChange(whichThrottle, change);
+		if (mainapp.IS_MOBILECONTROLII) {
+			mainapp.throttleFragment.moveThrottle(mainapp.throttleScale.stepToPosition(speed));
+		}
 		sendSpeedMsg(whichThrottle, speed);
 	}
 
@@ -1392,6 +1402,56 @@ public class throttle extends Activity implements android.gesture.GestureOverlay
 		changeTimerG = new ChangeDelay('G');
 		changeTimerS = new ChangeDelay('S');
 		
+		// add stuff to deal with ESU MobileControlII
+		if (mainapp.IS_MOBILECONTROLII) {
+			mainapp.throttleFragment = ThrottleFragment.newInstance(0);
+			mainapp.throttleScale = new ThrottleScale(0, MAX_SPEED_VAL_WIT);
+			mainapp.throttleFragment.setOnThrottleListener(new OnThrottleListener() {
+
+				private boolean isPressed = false;
+				@Override
+				public void onButtonDown() {
+					// TODO Auto-generated method stub
+					isPressed = true;
+				}
+
+				@Override
+				public void onButtonUp() {
+					// TODO Auto-generated method stub
+					if (isPressed) {
+						
+						Consist con;
+						int curDir;
+						if (whichVolume == 'T') {
+							con = mainapp.consistT;
+							curDir = dirT;
+						} else if (whichVolume == 'G') {
+							con = mainapp.consistG;
+							curDir = dirG;
+						} else {
+							con = mainapp.consistS;
+							curDir = dirS;
+						}
+						
+						int dir = curDir == 1 ? 0 : 1;
+
+						setEngineDirection(whichVolume, dir, false);
+					}
+					isPressed = false;
+				}
+
+				@Override
+				public void onPositionChanged(int arg0) {
+					// TODO Auto-generated method stub
+					speedUpdateAndNotify(whichVolume, mainapp.throttleScale.positionToStep(arg0));
+				}
+				
+			});
+			mainapp.throttleFragment.getFragmentManager().beginTransaction()
+					.add(mainapp.throttleFragment, "mc2:throttle")
+					.commit();
+		}
+		
 	} // end of onCreate()
 
 	@Override
@@ -1985,6 +2045,8 @@ public class throttle extends Activity implements android.gesture.GestureOverlay
 				}
 			}
 			return (true); // stop processing this key
+		} else if (mainapp.IS_MOBILECONTROLII && key== mainapp.throttleFragment.KEYCODE_THROTTLE_WAKEUP) {
+			return true;
 		}
 		return (super.onKeyDown(key, event)); // continue with normal key
 												// processing
