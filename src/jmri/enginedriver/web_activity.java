@@ -19,8 +19,6 @@ package jmri.enginedriver;
 
 import java.lang.reflect.Method;
 
-import eu.esu.mobilecontrol2.sdk.MobileControl2;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;

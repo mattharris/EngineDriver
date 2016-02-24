@@ -18,11 +18,12 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 package jmri.enginedriver;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -43,6 +44,7 @@ import eu.esu.mobilecontrol2.sdk.ThrottleFragment.OnThrottleListener;
 import eu.esu.mobilecontrol2.sdk.ThrottleScale;
 
 import jmri.enginedriver.logviewer.ui.LogViewerActivity;
+import android.support.v4.app.FragmentActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -60,7 +62,8 @@ import android.widget.TextView;
 import android.gesture.GestureOverlayView;
 import android.graphics.Typeface;
 
-public class throttle extends Activity implements android.gesture.GestureOverlayView.OnGestureListener {
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+public class throttle extends FragmentActivity implements android.gesture.GestureOverlayView.OnGestureListener {
 
 	private threaded_application mainapp; // hold pointer to mainapp
 	private SharedPreferences prefs;
@@ -1404,56 +1407,61 @@ public class throttle extends Activity implements android.gesture.GestureOverlay
 		
 		// add stuff to deal with ESU MobileControlII
 		if (mainapp.IS_MOBILECONTROLII) {
-			mainapp.throttleFragment = ThrottleFragment.newInstance(0);
-			mainapp.throttleScale = new ThrottleScale(0, MAX_SPEED_VAL_WIT);
-			mainapp.throttleFragment.setOnThrottleListener(new OnThrottleListener() {
-
-				private boolean isPressed = false;
-				@Override
-				public void onButtonDown() {
-					// TODO Auto-generated method stub
-					isPressed = true;
-				}
-
-				@Override
-				public void onButtonUp() {
-					// TODO Auto-generated method stub
-					if (isPressed) {
-						
-						Consist con;
-						int curDir;
-						if (whichVolume == 'T') {
-							con = mainapp.consistT;
-							curDir = dirT;
-						} else if (whichVolume == 'G') {
-							con = mainapp.consistG;
-							curDir = dirG;
-						} else {
-							con = mainapp.consistS;
-							curDir = dirS;
-						}
-						
-						int dir = curDir == 1 ? 0 : 1;
-
-						setEngineDirection(whichVolume, dir, false);
-					}
-					isPressed = false;
-				}
-
-				@Override
-				public void onPositionChanged(int arg0) {
-					// TODO Auto-generated method stub
-					speedUpdateAndNotify(whichVolume, mainapp.throttleScale.positionToStep(arg0));
-				}
-				
-			});
-			mainapp.throttleFragment.getFragmentManager().beginTransaction()
-					.add(mainapp.throttleFragment, "mc2:throttle")
-					.commit();
+			initMobileControlII();
 		}
 		
 	} // end of onCreate()
 
+	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+	private void initMobileControlII() {
+		mainapp.throttleFragment = ThrottleFragment.newInstance(0);
+		mainapp.throttleScale = new ThrottleScale(0, MAX_SPEED_VAL_WIT);
+		mainapp.throttleFragment.setOnThrottleListener(new OnThrottleListener() {
+
+			private boolean isPressed = false;
+			@Override
+			public void onButtonDown() {
+				// TODO Auto-generated method stub
+				isPressed = true;
+			}
+
+			@Override
+			public void onButtonUp() {
+				// TODO Auto-generated method stub
+				if (isPressed) {
+					
+					Consist con;
+					int curDir;
+					if (whichVolume == 'T') {
+						con = mainapp.consistT;
+						curDir = dirT;
+					} else if (whichVolume == 'G') {
+						con = mainapp.consistG;
+						curDir = dirG;
+					} else {
+						con = mainapp.consistS;
+						curDir = dirS;
+					}
+					
+					int dir = curDir == 1 ? 0 : 1;
+
+					setEngineDirection(whichVolume, dir, false);
+				}
+				isPressed = false;
+			}
+
+			@Override
+			public void onPositionChanged(int arg0) {
+				// TODO Auto-generated method stub
+				speedUpdateAndNotify(whichVolume, mainapp.throttleScale.positionToStep(arg0));
+			}
+			
+		});
+		getSupportFragmentManager().beginTransaction()
+				.add(mainapp.throttleFragment, "mc2:throttle")
+				.commit();
+	}
+	
 	@Override
 	public void onResume() {
 		super.onResume();
