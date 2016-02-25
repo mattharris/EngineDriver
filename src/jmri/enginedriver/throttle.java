@@ -1507,7 +1507,11 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 				.add(mainapp.throttleFragment, "mc2:throttle")
 				.add(mainapp.stopButtonFragment, "mc2:stopKey")
 				.commit();
-		if (mainapp.power_state.equals("1")) {
+		Log.d("Engine_Driver", "ESU MCII: Initialise LEDs");
+		if (mainapp.power_state == null) {
+			// Truly unknown - flash both
+			mainapp.setMC2LEDs(LEDState.BOTH_FLASH);
+		} else if (mainapp.power_state.equals("1")) {
 			// Power On - solid green
 			mainapp.setMC2LEDs(LEDState.GREEN);
 		} else if (mainapp.power_state.equals("0")) {
