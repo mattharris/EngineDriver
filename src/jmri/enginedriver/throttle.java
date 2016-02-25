@@ -40,6 +40,7 @@ import java.util.LinkedHashMap;
 import java.lang.reflect.Method;
 
 import eu.esu.mobilecontrol2.sdk.MobileControl2;
+import eu.esu.mobilecontrol2.sdk.StopButtonFragment;
 import eu.esu.mobilecontrol2.sdk.StopButtonFragment.OnStopButtonListener;
 import eu.esu.mobilecontrol2.sdk.ThrottleFragment;
 import eu.esu.mobilecontrol2.sdk.ThrottleFragment.OnThrottleListener;
@@ -1427,7 +1428,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void initMobileControlII() {
 		Log.d("Engine_Driver", "ESU MCII: Initialise start");
-		mainapp.throttleFragment = ThrottleFragment.newInstance(0);
+		mainapp.throttleFragment = ThrottleFragment.newInstance(1);
 		mainapp.throttleScale = new ThrottleScale(10, MAX_SPEED_VAL_WIT);
 		mainapp.throttleFragment.setOnThrottleListener(new OnThrottleListener() {
 
@@ -1475,6 +1476,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			}
 			
 		});
+		mainapp.stopButtonFragment = StopButtonFragment.newInstance();
 		mainapp.stopButtonFragment.setOnStopButtonListener(new OnStopButtonListener() {
 
 			@Override
