@@ -58,6 +58,7 @@ import org.json.JSONObject;
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketHandler;
 import eu.esu.mobilecontrol2.sdk.MobileControl2;
+import eu.esu.mobilecontrol2.sdk.StopButtonFragment;
 import eu.esu.mobilecontrol2.sdk.ThrottleFragment;
 import eu.esu.mobilecontrol2.sdk.ThrottleScale;
 import android.net.ConnectivityManager;
@@ -104,7 +105,7 @@ public class threaded_application extends Application {
 	LinkedHashMap<Integer, String> function_labels_default;  //function#s and labels from local settings
 	boolean[] function_states_T;  //current function states for first throttle
 	boolean[] function_states_S;  //current function states for second throttle
-	boolean[] function_states_G;  //current function states for second throttle
+	boolean[] function_states_G;  //current function states for third throttle
 	String[] to_system_names;
 	String[] to_user_names;
 	String[] to_states;
@@ -159,10 +160,12 @@ public class threaded_application extends Application {
 
 	public boolean EStopActivated = false;  // Used to determine if user pressed the EStop button.
 
+	// These are used for the ESU MobileControl II support
+	// Defined here as they need to be available across activities
 	final boolean IS_MOBILECONTROLII = MobileControl2.isMobileControl2();
 	ThrottleFragment throttleFragment = null;
 	ThrottleScale throttleScale = null;
-
+	StopButtonFragment stopButtonFragment = null;
 
 	//Used to tell set_Labels in Throttle not to update padding for throttle sliders after onCreate.
 	public boolean firstCreate = true;
@@ -2318,6 +2321,52 @@ public class threaded_application extends Application {
 		AlertDialog alert = b.create();
 		alert.show();
 	}
+
+	public enum LEDState {
+		NONE,
+		RED,
+		GREEN,
+		BOTH,
+		RED_FLASH,
+		GREEN_FLASH,
+		BOTH_FLASH
+	}
+	
+	public void setMC2LEDs(LEDState ledState) {
+		switch (ledState) {
+		case NONE:
+			MobileControl2.setLedState(MobileControl2.LED_RED, false);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+		case RED:
+			MobileControl2.setLedState(MobileControl2.LED_RED, true);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+			break;
+		case GREEN:
+			MobileControl2.setLedState(MobileControl2.LED_RED, false);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, true);
+			break;
+		case BOTH:
+			MobileControl2.setLedState(MobileControl2.LED_RED, true);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, true);
+			break;
+		case RED_FLASH:
+			MobileControl2.setLedState(MobileControl2.LED_RED, 250, 250);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+			break;
+		case GREEN_FLASH:
+			MobileControl2.setLedState(MobileControl2.LED_RED, false);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, 250, 250);
+			break;
+		case BOTH_FLASH:
+			MobileControl2.setLedState(MobileControl2.LED_RED, 250, 250);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, 250, 250);
+			break;
+		default:
+			MobileControl2.setLedState(MobileControl2.LED_RED, false);
+			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+			break;
+			}
+		}
 }
 
 
