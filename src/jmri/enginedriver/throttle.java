@@ -1429,7 +1429,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 	private void initMobileControlII() {
 		Log.d("Engine_Driver", "ESU MCII: Initialise start");
 		mainapp.throttleFragment = ThrottleFragment.newInstance(1);
-		mainapp.throttleScale = new ThrottleScale(10, MAX_SPEED_VAL_WIT);
+		mainapp.throttleScale = new ThrottleScale(10, MAX_SPEED_VAL_WIT + 1);
 		mainapp.throttleFragment.setOnThrottleListener(new OnThrottleListener() {
 
 			private boolean isPressed = false;
