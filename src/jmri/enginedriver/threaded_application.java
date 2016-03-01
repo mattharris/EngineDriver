@@ -160,15 +160,72 @@ public class threaded_application extends Application {
 
 	public boolean EStopActivated = false;  // Used to determine if user pressed the EStop button.
 
-	// These are used for the ESU MobileControl II support
-	// Defined here as they need to be available across activities
-	final boolean IS_MOBILECONTROLII = MobileControl2.isMobileControl2();
-	ThrottleFragment throttleFragment = null;
-	ThrottleScale throttleScale = null;
-	StopButtonFragment stopButtonFragment = null;
-
 	//Used to tell set_Labels in Throttle not to update padding for throttle sliders after onCreate.
 	public boolean firstCreate = true;
+
+	// These are used for the ESU MobileControl II support
+	// Defined here as they need to be available across activities
+	private final boolean IS_MOBILECONTROLII = MobileControl2.isMobileControl2();
+	private ThrottleFragment throttleFragment = null;
+	private ThrottleScale throttleScale = null;
+	private StopButtonFragment stopButtonFragment = null;
+
+	/**
+	 * Determines if running on an ESU MobileControl II throttle
+	 * 
+	 * @return true if on ESU MobileControl II; false otherwise
+	 */
+	public boolean isMobileControlII() {
+		return IS_MOBILECONTROLII;
+	}
+	/**
+	 * Retrieve the single ThrottleFragment.
+	 * Initialise if required
+	 * 
+	 * @return the ThrottleFragment
+	 */
+	
+	public ThrottleFragment getThrottleFragment() {
+		// Initialise if not done yet
+		if (throttleFragment == null) {
+			throttleFragment = ThrottleFragment.newInstance(1);
+		}
+		return throttleFragment;
+	}
+
+	/**
+	 * Retrieve the single ThrottleScale.
+	 * Can return <code>null</code> if not initialised
+	 * 
+	 * @return the ThrottleScale
+	 */
+	public ThrottleScale getThrottleScale() {
+		return throttleScale;
+	}
+
+	/**
+	 * Initialise the ThrottleScale.
+	 * 
+	 * @param zero positions to consider as zero
+	 * @param steps max number of steps to represent
+	 */
+	public void initThrottleScale(int zero, int steps) {
+		throttleScale = new ThrottleScale(zero, steps);
+	}
+
+	/**
+	 * Retrieve the single StopButtonFragment.
+	 * Initialise if required
+	 * 
+	 * @return the StopButtonFragment
+	 */
+	public StopButtonFragment getStopButtonFragment() {
+		// Initialise if not done yet
+		if (stopButtonFragment == null) {
+			stopButtonFragment = StopButtonFragment.newInstance();
+		}
+		return stopButtonFragment;
+	}
 
 	class comm_thread extends Thread  {
 		JmDNS jmdns = null;

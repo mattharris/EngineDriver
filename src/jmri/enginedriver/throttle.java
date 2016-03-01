@@ -39,12 +39,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.lang.reflect.Method;
 
-import eu.esu.mobilecontrol2.sdk.MobileControl2;
-import eu.esu.mobilecontrol2.sdk.StopButtonFragment;
 import eu.esu.mobilecontrol2.sdk.StopButtonFragment.OnStopButtonListener;
 import eu.esu.mobilecontrol2.sdk.ThrottleFragment;
 import eu.esu.mobilecontrol2.sdk.ThrottleFragment.OnThrottleListener;
-import eu.esu.mobilecontrol2.sdk.ThrottleScale;
 
 import jmri.enginedriver.logviewer.ui.LogViewerActivity;
 import jmri.enginedriver.threaded_application.LEDState;
@@ -504,10 +501,10 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 	// set speed slider and notify server
 	void speedUpdateAndNotify(char whichThrottle, int speed) {
 		speedUpdate(whichThrottle, speed);
-		if (mainapp.IS_MOBILECONTROLII) {
-			int pos = mainapp.throttleScale.stepToPosition(speed);
-			Log.d("Engine_Driver", "ESU MCII: Update speed- move knob to position: " + pos +" for speed: " + speed);
-			mainapp.throttleFragment.moveThrottle(pos);
+		if (mainapp.isMobileControlII()) {
+			int pos = mainapp.getThrottleScale().stepToPosition(speed);
+			Log.d("ESU_MCII", "Update speed- move knob to position: " + pos +" for speed: " + speed);
+			mainapp.getThrottleFragment().moveThrottle(pos);
 		}
 		sendSpeedMsg(whichThrottle, speed);
 	}
@@ -515,10 +512,10 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 	// change speed slider by scaled value and notify server
 	void speedChangeAndNotify(char whichThrottle, int change) {
 		int speed = speedChange(whichThrottle, change);
-		if (mainapp.IS_MOBILECONTROLII) {
-			int pos = mainapp.throttleScale.stepToPosition(speed);
-			Log.d("Engine_Driver", "ESU MCII: Change speed - move knob to position: " + pos +" for speed: " + speed);
-			mainapp.throttleFragment.moveThrottle(pos);
+		if (mainapp.isMobileControlII()) {
+			int pos = mainapp.getThrottleScale().stepToPosition(speed);
+			Log.d("ESU_MCII", "Change speed - move knob to position: " + pos +" for speed: " + speed);
+			mainapp.getThrottleFragment().moveThrottle(pos);
 		}
 		sendSpeedMsg(whichThrottle, speed);
 	}
@@ -1082,10 +1079,10 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 					lastSpeed = speed;
 				}
 				throttle.setProgress(lastSpeed);
-				if (mainapp.IS_MOBILECONTROLII) {
-					int position = mainapp.throttleScale.stepToPosition(lastSpeed);
-					Log.d("Engine_Driver", "ESU MCII: Update knob position from slider to: " + position + "; speed: " + lastSpeed);
-					mainapp.throttleFragment.moveThrottle(position);
+				if (mainapp.isMobileControlII()) {
+					int position = mainapp.getThrottleScale().stepToPosition(lastSpeed);
+					Log.d("ESU_MCII", "Update knob position from slider to: " + position + "; speed: " + lastSpeed);
+					mainapp.getThrottleFragment().moveThrottle(position);
 				}
 			} else {
 				setDisplayedSpeed(whichThrottle, speed);
@@ -1419,7 +1416,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 		changeTimerS = new ChangeDelay('S');
 		
 		// add stuff to deal with ESU MobileControlII
-		if (mainapp.IS_MOBILECONTROLII) {
+		if (mainapp.isMobileControlII()) {
 			initMobileControlII();
 		}
 		
@@ -1427,16 +1424,15 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 
 	@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 	private void initMobileControlII() {
-		Log.d("Engine_Driver", "ESU MCII: Initialise start");
-		mainapp.throttleFragment = ThrottleFragment.newInstance(1);
-		mainapp.throttleScale = new ThrottleScale(10, MAX_SPEED_VAL_WIT + 1);
-		mainapp.throttleFragment.setOnThrottleListener(new OnThrottleListener() {
+		Log.d("ESU_MCII", "Initialise start");
+		mainapp.initThrottleScale(10, MAX_SPEED_VAL_WIT + 1);
+		mainapp.getThrottleFragment().setOnThrottleListener(new OnThrottleListener() {
 
 			private boolean isPressed = false;
 			@Override
 			public void onButtonDown() {
 				// TODO Auto-generated method stub
-				Log.d("Engine_Driver", "ESU MCII: Knob button down");
+				Log.d("ESU_MCII", "Knob button down");
 				isPressed = true;
 				Consist con;
 				int curDir;
@@ -1453,15 +1449,15 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 				
 				int dir = (curDir == 1 ? 0 : 1);
 				setEngineDirection(whichVolume, dir, false);
-				Log.d("Engine_Driver", "ESU MCII: Change direction - was: " + curDir + "; now: " + dir);
+				Log.d("ESU_MCII", "Change direction - was: " + curDir + "; now: " + dir);
 			}
 
 			@Override
 			public void onButtonUp() {
 				// TODO Auto-generated method stub
-				Log.d("Engine_Driver", "ESU MCII: Knob button up");
+				Log.d("ESU_MCII", "Knob button up");
 				if (isPressed) {
-					Log.d("Engine_Driver", "ESU MCII: isPressed==true");
+					Log.d("ESU_MCII", "isPressed==true");
 				}
 				isPressed = false;
 			}
@@ -1469,20 +1465,19 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			@Override
 			public void onPositionChanged(int arg0) {
 				// TODO Auto-generated method stub
-				int step = mainapp.throttleScale.positionToStep(arg0);
-				Log.d("Engine_Driver", "ESU MCII: Knob position changed - position: " + arg0);
-				Log.d("Engine_Driver", "ESU MCII: Knob position changed - step: " + step);				
+				int step = mainapp.getThrottleScale().positionToStep(arg0);
+				Log.d("ESU_MCII", "Knob position changed - position: " + arg0);
+				Log.d("ESU_MCII", "Knob position changed - step: " + step);				
 				speedUpdateAndNotify(whichVolume, step);
 			}
 			
 		});
-		mainapp.stopButtonFragment = StopButtonFragment.newInstance();
-		mainapp.stopButtonFragment.setOnStopButtonListener(new OnStopButtonListener() {
+		mainapp.getStopButtonFragment().setOnStopButtonListener(new OnStopButtonListener() {
 
 			@Override
 			public void onStopButtonDown() {
 				// TODO Auto-generated method stub
-				Log.d("Engine_Driver", "ESU MCII: Stop button down");
+				Log.d("ESU_MCII", "Stop button down");
 				if (mainapp.EStopActivated) {
 					mainapp.sendEStopMsg();
 					mainapp.setMC2LEDs(LEDState.RED_FLASH);
@@ -1498,16 +1493,16 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			@Override
 			public void onStopButtonUp() {
 				// TODO Auto-generated method stub
-				Log.d("Engine_Driver", "ESU MCII: Stop button up");
+				Log.d("ESU_MCII", "Stop button up");
 				
 			}
 			
 		});
 		getSupportFragmentManager().beginTransaction()
-				.add(mainapp.throttleFragment, "mc2:throttle")
-				.add(mainapp.stopButtonFragment, "mc2:stopKey")
+				.add(mainapp.getThrottleFragment(), "mc2:throttle")
+				.add(mainapp.getStopButtonFragment(), "mc2:stopKey")
 				.commit();
-		Log.d("Engine_Driver", "ESU MCII: Initialise LEDs");
+		Log.d("ESU_MCII", "Initialise LEDs");
 		if (mainapp.power_state == null) {
 			// Truly unknown - flash both
 			mainapp.setMC2LEDs(LEDState.BOTH_FLASH);
@@ -1524,7 +1519,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			// Other - none
 			mainapp.setMC2LEDs(LEDState.NONE);
 		}
-		Log.d("Engine_Driver", "ESU MCII: Initialise complete");
+		Log.d("ESU_MCII", "Initialise complete");
 	}
 	
 	@Override
@@ -2118,8 +2113,8 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 				}
 			}
 			return (true); // stop processing this key
-		} else if (mainapp.IS_MOBILECONTROLII && key == ThrottleFragment.KEYCODE_THROTTLE_WAKEUP) {
-			Log.d("Engine_Driver", "ESU MCII: Process Throttle Wake-up keycode");
+		} else if (mainapp.isMobileControlII() && key == ThrottleFragment.KEYCODE_THROTTLE_WAKEUP) {
+			Log.d("ESU_MCII", "Process Throttle Wake-up keycode");
 			return true;
 		}
 		return (super.onKeyDown(key, event)); // continue with normal key
