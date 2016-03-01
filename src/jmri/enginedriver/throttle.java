@@ -1432,7 +1432,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			@Override
 			public void onButtonDown() {
 				// TODO Auto-generated method stub
-				Log.d("ESU_MCII", "Knob button down");
+				Log.d("ESU_MCII", "Knob button down at: " + SystemClock.elapsedRealtime());
 				isPressed = true;
 				Consist con;
 				int curDir;
@@ -1449,13 +1449,13 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 				
 				int dir = (curDir == 1 ? 0 : 1);
 				setEngineDirection(whichVolume, dir, false);
-				Log.d("ESU_MCII", "Change direction - was: " + curDir + "; now: " + dir);
+				Log.d("ESU_MCII", "Change direction for " + whichVolume + " - was: " + curDir + "; now: " + dir);
 			}
 
 			@Override
 			public void onButtonUp() {
 				// TODO Auto-generated method stub
-				Log.d("ESU_MCII", "Knob button up");
+				Log.d("ESU_MCII", "Knob button up at: " + SystemClock.elapsedRealtime());
 				if (isPressed) {
 					Log.d("ESU_MCII", "isPressed==true");
 				}
@@ -1477,7 +1477,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			@Override
 			public void onStopButtonDown() {
 				// TODO Auto-generated method stub
-				Log.d("ESU_MCII", "Stop button down");
+				Log.d("ESU_MCII", "Stop button down at: " + SystemClock.elapsedRealtime());
 				if (mainapp.EStopActivated) {
 					mainapp.sendEStopMsg();
 					mainapp.setMC2LEDs(LEDState.RED_FLASH);
@@ -1493,7 +1493,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			@Override
 			public void onStopButtonUp() {
 				// TODO Auto-generated method stub
-				Log.d("ESU_MCII", "Stop button up");
+				Log.d("ESU_MCII", "Stop button up at: " + SystemClock.elapsedRealtime());
 				
 			}
 			
