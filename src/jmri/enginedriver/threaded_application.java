@@ -234,7 +234,7 @@ public class threaded_application extends Application {
 		android.net.wifi.WifiManager.MulticastLock multicast_lock;
 		socket_WiT socketWiT;
 		PhoneListener phone;
-        ClockWebSocketHandler clockWebSocket = null;
+		ClockWebSocketHandler clockWebSocket = null;
 		heartbeat heart = new heartbeat();
 		volatile String currentTime = "";
 
@@ -443,13 +443,13 @@ public class threaded_application extends Application {
 						sendMsg(connection_msg_handler, message_type.CONNECTED);
 						phone = new PhoneListener();
 						/***future Notification
-  				    	showNotification();
+						showNotification();
 						 ***/
 						/***future	PowerLock
- 			    		PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-				    	wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Engine_Driver");
-			    		wl.acquire();
-						 ***/			    	
+						PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+						wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Engine_Driver");
+						wl.acquire();
+						 ***/
 					}
 					else {
 						host_ip = null;  //clear vars if failed to connect
@@ -527,10 +527,10 @@ public class threaded_application extends Application {
 					end_jmdns();
 					dlMetadataTask.stop();
 					dlRosterTask.stop();
-                    if (clockWebSocket != null) {
-                   		clockWebSocket.disconnect();
-                        clockWebSocket = null;
-                    }
+					if (clockWebSocket != null) {
+						clockWebSocket.disconnect();
+						clockWebSocket = null;
+					}
 					
 					Log.d("Engine_Driver","TA Alert Activites Shutdown");
 					alert_activities(message_type.SHUTDOWN,"");		//tell all activities to finish()
@@ -610,16 +610,16 @@ public class threaded_application extends Application {
 					if (!doFinish) {
 						alert_activities(message_type.CURRENT_TIME, currentTime);
 					}
-                    break;
-                    
+					break;
+
 				//Current Time clock display preference change
 				case message_type.CLOCK_DISPLAY:
 					if (!doFinish && clockWebSocket != null) {
 						clockWebSocket.refresh();
 						alert_activities(message_type.CURRENT_TIME, currentTime);
 					}
-                    break;
-                        
+					break;
+
 				// SHUTDOWN - terminate socketWiT and it's done
 				case message_type.SHUTDOWN:
 					shutdown();
@@ -693,7 +693,7 @@ public class threaded_application extends Application {
 				withrottle_send("*+");     //request to turn on heartbeat (if enabled in server prefs)
 			}
 		}
-		
+
 		private void releaseLoco(String addr, char whichThrottle) {
 			withrottle_send(whichThrottle+"r"+(addr!=""?"<;>"+addr:""));  //send release command
 		}
@@ -704,7 +704,7 @@ public class threaded_application extends Application {
 			reacquireConsist(consistS, 'S');
 			reacquireConsist(consistG, 'G');
 		}
-		
+
 		private void reacquireConsist(Consist c, char whichThrottle)
 		{
 			for(ConLoco l : c.getLocos())					// reacquire each loco in the consist 
@@ -732,17 +732,17 @@ public class threaded_application extends Application {
 
 		private void process_response(String response_str) {
 			/* see java/arc/jmri/jmrit/withrottle/deviceserver.java for server code and some documentation
-    	  VN<Version#>
-    	  T<EngineAddress>(<LongOrShort>)  
-    	  S<2ndEngineAddress>(<LongOrShort>)
-    	  RL<RosterSize>]<RosterList>
-    	  RF<RosterFunctionList>
-    	  RS<2ndRosterFunctionList>
-			 *<HeartbeatIntervalInSeconds>      
-    	  PTL[<SystemTurnoutName><UserName><State>repeat] where state 1=Unknown. 2=Closed, 4=Thrown
-    	  PTA<NewTurnoutState><SystemName>
-    	  PPA<NewPowerState> where state 0=off, 1=on, 2=unknown
-    	  TODO: add remaining items, or move examples into code below
+		  VN<Version#>
+		  T<EngineAddress>(<LongOrShort>)  
+		  S<2ndEngineAddress>(<LongOrShort>)
+		  RL<RosterSize>]<RosterList>
+		  RF<RosterFunctionList>
+		  RS<2ndRosterFunctionList>
+			 *<HeartbeatIntervalInSeconds>
+		  PTL[<SystemTurnoutName><UserName><State>repeat] where state 1=Unknown. 2=Closed, 4=Thrown
+		  PTA<NewTurnoutState><SystemName>
+		  PPA<NewPowerState> where state 0=off, 1=on, 2=unknown
+		  TODO: add remaining items, or move examples into code below
 			 */
 
 			//send response to debug log for review
@@ -904,7 +904,7 @@ public class threaded_application extends Application {
 						skipAlert = true;
 					}
 					else {
-	                    dlMetadataTask.get();			// start background metadata update
+						dlMetadataTask.get();			// start background metadata update
 						dlRosterTask.get();				// start background roster update
 	
 						if(androidVersion >= minWebSocketVersion) {
@@ -1674,7 +1674,7 @@ public class threaded_application extends Application {
 				}
 			};
 		}
-		
+
 		class PhoneListener extends PhoneStateListener {
 			private TelephonyManager telMgr;
 
@@ -1682,21 +1682,21 @@ public class threaded_application extends Application {
 				telMgr = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 				this.enable();
 			}
-			
+
 			public void disable() {
 				telMgr.listen(this, PhoneStateListener.LISTEN_NONE);
 			}
-			
+
 			public void enable() {
 				telMgr.listen(this, PhoneStateListener.LISTEN_CALL_STATE);
 			}
-			
+
 			@Override
 			public void onCallStateChanged(int state, String incomingNumber) {
 				if(state == TelephonyManager.CALL_STATE_OFFHOOK) {
 					if (prefs.getBoolean("stop_on_phonecall_preference", 
 							getResources().getBoolean(R.bool.prefStopOnPhonecallDefaultValue))) {
-	    	            Log.d("Engine_Driver","Phone is OffHook, Stopping Trains");
+						Log.d("Engine_Driver","Phone is OffHook, Stopping Trains");
 						if (consistT.isActive()) {
 							withrottle_send("MTA*<;>V0");
 						}
@@ -1710,97 +1710,97 @@ public class threaded_application extends Application {
 				}
 			}
 		}
-		
+
 		class ClockWebSocketHandler extends WebSocketHandler {
-		    private final String sGetClockMemory = "{\"type\":\"memory\",\"data\":{\"name\":\"IMCURRENTTIME\"}}";
-		    private final String sClockMemoryName = "IMCURRENTTIME";
-		    private WebSocketConnection mConnection = new WebSocketConnection();
-		    private int displayClockHrs = 0;
-		    private final SimpleDateFormat sdf12 = new SimpleDateFormat("h:mm a");
-		    private final SimpleDateFormat sdf24 = new SimpleDateFormat("HH:mm");
-		    
+			private final String sGetClockMemory = "{\"type\":\"memory\",\"data\":{\"name\":\"IMCURRENTTIME\"}}";
+			private final String sClockMemoryName = "IMCURRENTTIME";
+			private WebSocketConnection mConnection = new WebSocketConnection();
+			private int displayClockHrs = 0;
+			private final SimpleDateFormat sdf12 = new SimpleDateFormat("h:mm a");
+			private final SimpleDateFormat sdf24 = new SimpleDateFormat("HH:mm");
+
 			@Override
-		    public void onOpen() {
+			public void onOpen() {
 				displayClock = true;
-		        try {
-    	            Log.d("Engine_Driver","ClockWebSocket open");
-		            mConnection.sendTextMessage(sGetClockMemory);
-		        } catch(Exception e) { 
-    	            Log.d("Engine_Driver","ClockWebSocket open error: "+e.toString());
-		        }
-		    }
-		    
-    	    @Override
-    	    public void onTextMessage(String msg) {
-    	        try {
-    	            JSONObject currentTimeMemory = new JSONObject(msg);
-    	            JSONObject data = currentTimeMemory.getJSONObject("data");
-    	            if(sClockMemoryName.equals(data.getString("name"))) {
-    	            	currentTime = data.getString("value");
-    	            	if(currentTime.length() > 0) {
-    	            		String newTime; 
-        	            	try {
-	    	            		if(currentTime.indexOf("M") < 0) {			// no AM or PM - in 24 hr format
-	    	            			if(displayClockHrs == 1) {				// display in 12 hr format
-		    	            			newTime = sdf12.format(sdf24.parse(currentTime));
-		    	            			currentTime = newTime;
-	    	            			}
-	    	            		} else {									// in 12 hr format 
-	    	            			if(displayClockHrs == 2) {				// display in 24 hr format
-	    	            				newTime = sdf24.format(sdf12.parse(currentTime));
-	    	            				currentTime = newTime;
-	    	            			}
-    	            			}
-        	            	} catch (ParseException e) { }
-    	            		alert_activities(message_type.CURRENT_TIME, currentTime);	  //send the time update
-    	            	}
-    	            }
-    	        } catch (JSONException e) {
-    	        	// wasn't a clock memory message so just ignore it
-    	        }
-    	    }
-		    
-		    @Override
-		    public void onClose(int code, String closeReason) {
-		    	// attempt reconnection unless finishing
+				try {
+					Log.d("Engine_Driver","ClockWebSocket open");
+					mConnection.sendTextMessage(sGetClockMemory);
+				} catch(Exception e) {
+					Log.d("Engine_Driver","ClockWebSocket open error: "+e.toString());
+				}
+			}
+
+			@Override
+			public void onTextMessage(String msg) {
+				try {
+					JSONObject currentTimeMemory = new JSONObject(msg);
+					JSONObject data = currentTimeMemory.getJSONObject("data");
+					if(sClockMemoryName.equals(data.getString("name"))) {
+						currentTime = data.getString("value");
+						if(currentTime.length() > 0) {
+							String newTime;
+							try {
+								if(currentTime.indexOf("M") < 0) {			// no AM or PM - in 24 hr format
+									if(displayClockHrs == 1) {				// display in 12 hr format
+										newTime = sdf12.format(sdf24.parse(currentTime));
+										currentTime = newTime;
+									}
+								} else {									// in 12 hr format
+									if(displayClockHrs == 2) {				// display in 24 hr format
+										newTime = sdf24.format(sdf12.parse(currentTime));
+										currentTime = newTime;
+									}
+								}
+							} catch (ParseException e) { }
+							alert_activities(message_type.CURRENT_TIME, currentTime);	  //send the time update
+						}
+					}
+				} catch (JSONException e) {
+					// wasn't a clock memory message so just ignore it
+				}
+			}
+
+			@Override
+			public void onClose(int code, String closeReason) {
+				// attempt reconnection unless finishing
 				if(!doFinish && displayClock) {
 					displayClock = false;
 					this.connect();
 				}
-		    }
-				    
-		    private void connect() {
-		        try {
-    	            Log.d("Engine_Driver","ClockWebSocket attempt connect");
+			}
+
+			private void connect() {
+				try {
+					Log.d("Engine_Driver","ClockWebSocket attempt connect");
 					mConnection.connect(createUri(), this);
-		        } catch (Exception e) {
-    	            Log.d("Engine_Driver","ClockWebSocket connect error: "+e.toString());
-		        }
-		    }
-		    
-		    public void disconnect() {
-	            displayClock = false;
-	            try {
-	                mConnection.disconnect();
-	            } catch (Exception e) {
-    	            Log.d("Engine_Driver","ClockWebSocket disconnect error: "+e.toString());
-	            }
-		    }
-		        
-		    public void refresh() {
-    			currentTime = "";
-    			try {
-    				displayClockHrs = Integer.parseInt(prefs.getString("ClockDisplayTypePreference", "0"));
-    			} catch(NumberFormatException e) {
-    				displayClockHrs = 0;
-    			}
-		    	if(displayClockHrs > 0) {
-		    		if (mConnection.isConnected())
-		    			this.disconnect();
-	    			this.connect();
-		    	} else { 
-                    this.disconnect();
-		    	}
+				} catch (Exception e) {
+					Log.d("Engine_Driver","ClockWebSocket connect error: "+e.toString());
+				}
+			}
+
+			public void disconnect() {
+				displayClock = false;
+				try {
+					mConnection.disconnect();
+				} catch (Exception e) {
+					Log.d("Engine_Driver","ClockWebSocket disconnect error: "+e.toString());
+				}
+			}
+
+			public void refresh() {
+				currentTime = "";
+				try {
+					displayClockHrs = Integer.parseInt(prefs.getString("ClockDisplayTypePreference", "0"));
+				} catch(NumberFormatException e) {
+					displayClockHrs = 0;
+				}
+				if(displayClockHrs > 0) {
+					if (mConnection.isConnected())
+						this.disconnect();
+					this.connect();
+				} else {
+					this.disconnect();
+				}
 			}
 		}
 	}
@@ -1811,26 +1811,27 @@ public class threaded_application extends Application {
 	 * Currently call this from each activity onPause, passing the current intent 
 	 * to return to when reopening.  */  
 	void addNotification(Intent notificationIntent) {
-	    NotificationCompat.Builder builder =
-	    		new NotificationCompat.Builder(this)
-	    .setSmallIcon(R.drawable.icon)
+		NotificationCompat.Builder builder =
+				new NotificationCompat.Builder(this)
+		.setSmallIcon(R.drawable.icon)
 		.setContentTitle(this.getString(R.string.notification_title))
 		.setContentText(this.getString(R.string.notification_text))
 		.setOngoing(true);
 
-	    PendingIntent contentIntent = PendingIntent.getActivity(this, ED_NOTIFICATION_ID, notificationIntent, 
-	    		PendingIntent.FLAG_CANCEL_CURRENT);
-	    builder.setContentIntent(contentIntent);
+		PendingIntent contentIntent = PendingIntent.getActivity(this, ED_NOTIFICATION_ID, notificationIntent,
+				PendingIntent.FLAG_CANCEL_CURRENT);
+		builder.setContentIntent(contentIntent);
 
-	    // Add as notification
-	    NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-	    manager.notify(ED_NOTIFICATION_ID, builder.build());
+
+		// Add as notification
+		NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		manager.notify(ED_NOTIFICATION_ID, builder.build());
 	}
 
 	// Remove notification
 	void removeNotification() {
 		NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-	    manager.cancel(ED_NOTIFICATION_ID);
+		manager.cancel(ED_NOTIFICATION_ID);
 	}
 
 	@Override
@@ -1849,11 +1850,11 @@ public class threaded_application extends Application {
 		alert_activities(message_type.DISCONNECT,"");
 
 		/***future Recovery
-	    //Normally CA is run via the manifest when ED is launched.
-	    //However when starting ED after it has been killed in the bkg,
-	    //CA may not be running (or may not be on top).
-	    //We need to ensure CA is running at this point in the code,
-	    //so start CA if it is not running else bring to top if already running.
+		//Normally CA is run via the manifest when ED is launched.
+		//However when starting ED after it has been killed in the bkg,
+		//CA may not be running (or may not be on top).
+		//We need to ensure CA is running at this point in the code,
+		//so start CA if it is not running else bring to top if already running.
 		final Intent caIntent = new Intent(this, connection_activity.class);
 		caIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		startActivity(caIntent);
@@ -1882,7 +1883,7 @@ public class threaded_application extends Application {
 	public boolean isForcingFinish() {
 		return doFinish;
 	}
-	
+
 	public void cancelForcingFinish() {
 		doFinish = false;
 	}
@@ -1914,8 +1915,8 @@ public class threaded_application extends Application {
 			}
 		}
 		catch (IOException except) { 
-			Log.e("settings_activity", "Could not read file "+except.getMessage()); 
-		}  
+			Log.e("settings_activity", "Could not read file "+except.getMessage());
+		}
 	}
 
 	public class DownloadRosterTask extends DownloadDataTask {
@@ -1968,7 +1969,7 @@ public class threaded_application extends Application {
 					   String metadataName = j.getJSONObject("data").getString("name");
 					   String metadataValue = j.getJSONObject("data").getString("value");
 					   metadataTemp.put(metadataName, metadataValue);
-					}				
+					}
 			} catch (JSONException e) {
 				Log.d("Engine_Driver","exception trying to retrieve json metadata.");
 			} catch(Exception e) {
@@ -1999,7 +2000,7 @@ public class threaded_application extends Application {
 				}
 				catch(Throwable t) {
 					Log.d("Engine_Driver", "Data fetch failed: " + t.getMessage());
-				}	  
+				}
 
 				// background load of Data completed
 				finally {
@@ -2316,7 +2317,7 @@ public class threaded_application extends Application {
 		String uri = "";
 		int port = web_server_port;
 		if (port > 0) {
-            uri = "ws://" + host_ip + ":" + port + "/json/";
+			uri = "ws://" + host_ip + ":" + port + "/json/";
 		}
 		return uri;
 	}
@@ -2325,9 +2326,9 @@ public class threaded_application extends Application {
 	 * Set activity screen orientation based on prefs, check to avoid sending change when already there.
 	 * checks "auto Web on landscape" preference and returns false if orientation requires activity switch
 	 *
-     * @param activity	calling activity
-     * @param webPref	if absent or false, uses Throttle Orientation pref.
-     * 					if true, uses Web Orientation pref
+	 * @param activity	calling activity
+	 * @param webPref	if absent or false, uses Throttle Orientation pref.
+	 * 					if true, uses Web Orientation pref
 	 * 
 	 * @return 	true if the new orientation is ok for this activity.
 	 * 			false if "Auto Web on Landscape" is enabled and new orientation requires activity switch
@@ -2337,7 +2338,7 @@ public class threaded_application extends Application {
 	}
 	public boolean setActivityOrientation(Activity activity, Boolean webPref) {
 		String to;
-		to = prefs.getString("ThrottleOrientation", 
+		to = prefs.getString("ThrottleOrientation",
 				activity.getApplicationContext().getResources().getString(R.string.prefThrottleOrientationDefaultValue));
 		if(to.equals("Auto-Web")) {
 			int orient = activity.getResources().getConfiguration().orientation;
@@ -2346,14 +2347,14 @@ public class threaded_application extends Application {
 				return(false);
 		}
 		else if(webPref) {
-			to = prefs.getString("WebOrientation", 
+			to = prefs.getString("WebOrientation",
 					activity.getApplicationContext().getResources().getString(R.string.prefWebOrientationDefaultValue));
 		}
-		
+
 		int co = activity.getRequestedOrientation();
-		if(to.equals("Landscape")   && (co != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE))  
+		if(to.equals("Landscape")   && (co != ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE))
 			activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-		else if(to.equals("Auto-Rotate") && (co != ActivityInfo.SCREEN_ORIENTATION_SENSOR))  
+		else if(to.equals("Auto-Rotate") && (co != ActivityInfo.SCREEN_ORIENTATION_SENSOR))
 			activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 		else if(to.equals("Portrait")    && (co != ActivityInfo.SCREEN_ORIENTATION_PORTRAIT))
 			activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -2363,9 +2364,9 @@ public class threaded_application extends Application {
 	// prompt for Exit
 	// must be called on the UI thread
 	public void checkExit(final Activity activity) {
-		final AlertDialog.Builder b = new AlertDialog.Builder(activity); 
-		b.setIcon(android.R.drawable.ic_dialog_alert); 
-		b.setTitle(R.string.exit_title); 
+		final AlertDialog.Builder b = new AlertDialog.Builder(activity);
+		b.setIcon(android.R.drawable.ic_dialog_alert);
+		b.setTitle(R.string.exit_title);
 		b.setMessage(R.string.exit_text);
 		b.setCancelable(true);
 		b.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
@@ -2383,10 +2384,10 @@ public class threaded_application extends Application {
 		NONE,
 		RED,
 		GREEN,
-		BOTH,
+		YELLOW,
 		RED_FLASH,
 		GREEN_FLASH,
-		BOTH_FLASH
+		YELLOW_FLASH
 	}
 	
 	public void setMC2LEDs(LEDState ledState) {
@@ -2394,36 +2395,44 @@ public class threaded_application extends Application {
 		case NONE:
 			MobileControl2.setLedState(MobileControl2.LED_RED, false);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+			Log.d("ESU_MCII", "Set LEDs: NONE");
+			break;
 		case RED:
 			MobileControl2.setLedState(MobileControl2.LED_RED, true);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+			Log.d("ESU_MCII", "Set LEDs: RED");
 			break;
 		case GREEN:
 			MobileControl2.setLedState(MobileControl2.LED_RED, false);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, true);
+			Log.d("ESU_MCII", "Set LEDs: GREEN");
 			break;
-		case BOTH:
+		case YELLOW:
 			MobileControl2.setLedState(MobileControl2.LED_RED, true);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, true);
+			Log.d("ESU_MCII", "Set LEDs: YELLOW");
 			break;
 		case RED_FLASH:
 			MobileControl2.setLedState(MobileControl2.LED_RED, 250, 250);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+			Log.d("ESU_MCII", "Set LEDs: RED_FLASH");
 			break;
 		case GREEN_FLASH:
 			MobileControl2.setLedState(MobileControl2.LED_RED, false);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, 250, 250);
+			Log.d("ESU_MCII", "Set LEDs: GREEN_FLASH");
 			break;
-		case BOTH_FLASH:
+		case YELLOW_FLASH:
 			MobileControl2.setLedState(MobileControl2.LED_RED, 250, 250);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, 250, 250);
+			Log.d("ESU_MCII", "Set LEDs: YELLOW_FLASH");
 			break;
 		default:
 			MobileControl2.setLedState(MobileControl2.LED_RED, false);
 			MobileControl2.setLedState(MobileControl2.LED_GREEN, false);
+			Log.d("ESU_MCII", "Set LEDs: UNKNOWN (NONE)");
 			break;
 			}
 		}
 }
-
 

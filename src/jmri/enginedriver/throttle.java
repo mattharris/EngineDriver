@@ -1431,7 +1431,6 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			private boolean isPressed = false;
 			@Override
 			public void onButtonDown() {
-				// TODO Auto-generated method stub
 				Log.d("ESU_MCII", "Knob button down at: " + SystemClock.elapsedRealtime());
 				isPressed = true;
 				Consist con;
@@ -1454,7 +1453,6 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 
 			@Override
 			public void onButtonUp() {
-				// TODO Auto-generated method stub
 				Log.d("ESU_MCII", "Knob button up at: " + SystemClock.elapsedRealtime());
 				if (isPressed) {
 					Log.d("ESU_MCII", "isPressed==true");
@@ -1464,7 +1462,6 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 
 			@Override
 			public void onPositionChanged(int arg0) {
-				// TODO Auto-generated method stub
 				int step = mainapp.getThrottleScale().positionToStep(arg0);
 				Log.d("ESU_MCII", "Knob position changed - position: " + arg0);
 				Log.d("ESU_MCII", "Knob position changed - step: " + step);				
@@ -1476,7 +1473,6 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 
 			@Override
 			public void onStopButtonDown() {
-				// TODO Auto-generated method stub
 				Log.d("ESU_MCII", "Stop button down at: " + SystemClock.elapsedRealtime());
 				if (mainapp.EStopActivated) {
 					mainapp.sendEStopMsg();
@@ -1492,7 +1488,6 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 
 			@Override
 			public void onStopButtonUp() {
-				// TODO Auto-generated method stub
 				Log.d("ESU_MCII", "Stop button up at: " + SystemClock.elapsedRealtime());
 				
 			}
@@ -1505,7 +1500,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 		Log.d("ESU_MCII", "Initialise LEDs");
 		if (mainapp.power_state == null) {
 			// Truly unknown - flash both
-			mainapp.setMC2LEDs(LEDState.BOTH_FLASH);
+			mainapp.setMC2LEDs(LEDState.YELLOW_FLASH);
 		} else if (mainapp.power_state.equals("1")) {
 			// Power On - solid green
 			mainapp.setMC2LEDs(LEDState.GREEN);
