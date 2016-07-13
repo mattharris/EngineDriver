@@ -127,6 +127,12 @@
             android:summary="@string/prefStopOnPhonecallSummary"
             android:title="@string/prefStopOnPhonecallTitle" >
         </CheckBoxPreference>
+        <CheckBoxPreference
+            android:defaultValue="@bool/prefSelectiveLeadSoundDefaultValue"
+            android:key="SelectiveLeadSound"
+            android:summary="@string/prefSelectiveLeadSoundSummary"
+            android:title="@string/prefSelectiveLeadSoundTitle" >
+        </CheckBoxPreference>
         </PreferenceCategory>
     <PreferenceCategory android:title="@string/prefSelectLocoTitle" >
         <CheckBoxPreference
@@ -223,6 +229,12 @@
             android:summary="@string/prefDelimiterSummary"
             android:title="@string/prefDelimiterTitle" >
         </EditTextPreference>
+        <CheckBoxPreference
+            android:defaultValue="@bool/prefHideIfNoUserNameDefaultValue"
+            android:key="HideIfNoUserNamePreference"
+            android:summary="@string/prefHideIfNoUserNameSummary"
+            android:title="@string/prefHideIfNoUserNameTitle" >
+        </CheckBoxPreference>
         <CheckBoxPreference
             android:defaultValue="@bool/prefSwipeThroughTurnoutsDefaultValue"
             android:key="swipe_through_turnouts_preference"

@@ -224,9 +224,9 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 
 		@Override
 		public void handleMessage(Message msg) {
+			String response_str = msg.obj.toString();
 			switch (msg.what) {
 			case message_type.RESPONSE: { // handle messages from WiThrottle server
-				String response_str = msg.obj.toString();
 				if (response_str.length() < 2) return;  //bail if too short, to avoid crash				
 				char com1 = response_str.charAt(0);				
 				char whichThrottle = response_str.charAt(1);
@@ -383,12 +383,12 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 				set_labels();				// refresh function labels when any roster response is received
 				break;
 			case message_type.WIT_CON_RETRY:
-				witRetry(msg.obj.toString());
+				witRetry(response_str);
 				break;
 			case message_type.WIT_CON_RECONNECT:
 				break;
 			case message_type.CURRENT_TIME:
-				currentTime = msg.obj.toString();
+				currentTime = response_str;
 				setTitle();
 				break;
 			case message_type.DISCONNECT:
@@ -943,13 +943,30 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 	public class function_button_touch_listener implements View.OnTouchListener {
 		int function;
 		char whichThrottle;		// T for first throttle, S for second, G for third
+		boolean leadOnly;		// function only applies to the lead loco
+		boolean trailOnly;		// function only applies to the trail loco (future)
 
-		// public function_button_touch_listener(int new_function, boolean
-		// new_toggle_type, String new_whichThrottle)
 		public function_button_touch_listener(int new_function, char new_whichThrottle) {
+			this(new_function, new_whichThrottle, "");
+		}
+
+		public function_button_touch_listener(int new_function, char new_whichThrottle, String funcLabel) {
 			function = new_function; 	// store these values for this button
 			whichThrottle = new_whichThrottle;
+			String lab = funcLabel.toUpperCase().trim();
+			leadOnly = false;
+			trailOnly = false;
+			if (lab != null && lab != "")
+			{
+				boolean selectiveLeadSound = prefs.getBoolean("SelectiveLeadSound", getResources().getBoolean(R.bool.prefSelectiveLeadSoundDefaultValue));
+				leadOnly =  (selectiveLeadSound && 
+								(lab.contains("WHISTLE") || lab.contains("HORN") || lab.contains("BELL"))
+							|| lab.contains("HEAD")
+							|| (lab.contains("LIGHT") && !lab.contains("REAR")));
+				trailOnly = lab.contains("REAR");
+			}
 		}
+		
 
 		@Override
 		public boolean onTouch(View v, MotionEvent event) {
@@ -979,67 +996,71 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 			String throt = Character.toString(whichThrottle);
 
 			switch (action) {
-			case MotionEvent.ACTION_DOWN: {
-				switch (this.function) {
-				case function_button.FORWARD:
-				case function_button.REVERSE: {
-					int dir = (function == function_button.FORWARD ? 1 : 0);
-					showDirectionRequest(whichThrottle, dir);		 // update requested direction indication
-					setEngineDirection(whichThrottle, dir, false);	 // update direction for each engine on this throttle
+				case MotionEvent.ACTION_DOWN: {
+					switch (this.function) {
+						case function_button.FORWARD:
+						case function_button.REVERSE: {
+							int dir = (function == function_button.FORWARD ? 1 : 0);
+							showDirectionRequest(whichThrottle, dir);		 // update requested direction indication
+							setEngineDirection(whichThrottle, dir, false);	 // update direction for each engine on this throttle
+							break;
+						}
+						case function_button.STOP: 
+							set_stop_button(whichThrottle, true);
+							speedUpdateAndNotify(whichThrottle, 0);
+							break;
+						case function_button.SPEED_LABEL:  // specify which throttle the volume button controls
+							whichVolume = whichThrottle; 	// use whichever was clicked
+							set_labels();
+							break;
+		
+						default: { // handle the function buttons
+							Consist con;
+							if (whichThrottle == 'T') {
+								con = mainapp.consistT;
+							} else if (whichThrottle == 'G') {
+								con = mainapp.consistG;
+							} else {
+								con = mainapp.consistS;
+							}
+		
+							String addr = "";
+							if (leadOnly)
+								addr = con.getLeadAddr();
+// ***future				else if (trailOnly)
+//								addr = con.getTrailAddr();
+							mainapp.sendMsg(mainapp.comm_msg_handler, message_type.FUNCTION, whichThrottle + addr, this.function, 1);
+							// set_function_request(whichThrottle, function, 1);
+							break;
+						}
+					}
 					break;
 				}
-				case function_button.STOP: {
-					set_stop_button(whichThrottle, true);
-					speedUpdateAndNotify(whichThrottle, 0);
-				}
-				case function_button.SPEED_LABEL: { // specify which throttle the volume button controls
-					whichVolume = whichThrottle; 	// use whichever was clicked
-					set_labels();
+				
+				// handle stopping of function on key-up
+				case MotionEvent.ACTION_UP:
+				case MotionEvent.ACTION_CANCEL:
+	
+					if (function == function_button.STOP) {
+						set_stop_button(whichThrottle, false);
+					}
+					// only process UP for function buttons
+					else if (function < function_button.FORWARD) {
+						// Consist con = (whichThrottle == 'T') ? mainapp.consistT :
+						// mainapp.consistS;
+						Consist con;
+						if (whichThrottle == 'T') {
+							con = mainapp.consistT;
+						} else if (whichThrottle == 'G') {
+							con = mainapp.consistG;
+						} else {
+							con = mainapp.consistS;
+						}
+						String addr = con.getLeadAddr();
+						mainapp.sendMsg(mainapp.comm_msg_handler, message_type.FUNCTION, throt + addr, function, 0);
+						// set_function_request(whichThrottle, function, 0);
+					}
 					break;
-				}
-
-				default: { // handle the function buttons
-					Consist con;
-					if (whichThrottle == 'T') {
-						con = mainapp.consistT;
-					} else if (whichThrottle == 'G') {
-						con = mainapp.consistG;
-					} else {
-						con = mainapp.consistS;
-					}
-
-					String addr = con.getLeadAddr();
-					mainapp.sendMsg(mainapp.comm_msg_handler, message_type.FUNCTION, whichThrottle + addr, this.function, 1);
-					// set_function_request(whichThrottle, function, 1);
-				}
-				}
-
-			}
-				break;
-			// handle stopping of function on key-up
-			case MotionEvent.ACTION_UP:
-			case MotionEvent.ACTION_CANCEL:
-
-				if (function == function_button.STOP) {
-					set_stop_button(whichThrottle, false);
-				}
-				// only process UP for function buttons
-				else if (function < function_button.FORWARD) {
-					// Consist con = (whichThrottle == 'T') ? mainapp.consistT :
-					// mainapp.consistS;
-					Consist con;
-					if (whichThrottle == 'T') {
-						con = mainapp.consistT;
-					} else if (whichThrottle == 'G') {
-						con = mainapp.consistG;
-					} else {
-						con = mainapp.consistS;
-					}
-					String addr = con.getLeadAddr();
-					mainapp.sendMsg(mainapp.comm_msg_handler, message_type.FUNCTION, throt + addr, function, 0);
-					// set_function_request(whichThrottle, function, 0);
-				}
-				break;
 			}
 		}
 	}
@@ -1351,11 +1372,8 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 		fbT = (ViewGroup) findViewById(R.id.function_buttons_table_T);
 		fbS = (ViewGroup) findViewById(R.id.function_buttons_table_S);
 		fbG = (ViewGroup) findViewById(R.id.function_buttons_table_G);
-		// loop through all function buttons and
 		// set label and dcc functions (based on settings) or hide if no label
-		set_function_labels_and_listeners_for_view('T');
-		set_function_labels_and_listeners_for_view('S');
-		set_function_labels_and_listeners_for_view('G');
+		setAllFunctionLabelsAndListeners();
 
 		if (mVelocityTracker == null) {
 			mVelocityTracker = VelocityTracker.obtain();
@@ -1657,8 +1675,17 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 		}
 		webView.loadUrl(url);
 	}
+
+	void setAllFunctionLabelsAndListeners()
+	{
+		set_function_labels_and_listeners_for_view('T');
+		set_function_labels_and_listeners_for_view('S');
+		set_function_labels_and_listeners_for_view('G');
+	}
 	
 	// helper function to set up function buttons for each throttle
+	// loop through all function buttons and
+	// set label and dcc functions (based on settings) or hide if no label
 	void set_function_labels_and_listeners_for_view(char whichThrottle) {
 		// Log.d("Engine_Driver","starting set_function_labels_and_listeners_for_view");
 
@@ -1705,9 +1732,10 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 					Integer func = aList.get(k);
 					functionButtonMap.put(func, b); // save function to button
 													// mapping
-					fbtl = new function_button_touch_listener(func, whichThrottle);
+					String bt = function_labels_temp.get(func);
+					fbtl = new function_button_touch_listener(func, whichThrottle, bt);
 					b.setOnTouchListener(fbtl);
-					String bt = function_labels_temp.get(func) + "        "; 	// pad with spaces, and limit to 7 characters
+					bt = bt  + "        "; 	// pad with spaces, and limit to 7 characters
 					b.setText(bt.substring(0, 7));
 					b.setVisibility(VISIBLE);
 					b.setEnabled(false); // start out with everything disabled
@@ -2176,7 +2204,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 		case R.id.preferences_mnu:
 			in = new Intent().setClass(this, preferences.class);
 			navigatingAway = true;
-			startActivity(in);
+			startActivityForResult(in,0);	// reinitialize function buttons and labels on return
 			connection_activity.overridePendingTransition(this, R.anim.fade_in, R.anim.fade_out);
 			break;
 		case R.id.settings_mnu:
@@ -2272,9 +2300,7 @@ public class throttle extends FragmentActivity implements android.gesture.Gestur
 		}
 		// loop through all function buttons and
 		// set label and dcc functions (based on settings) or hide if no label
-		set_function_labels_and_listeners_for_view('T');
-		set_function_labels_and_listeners_for_view('S');
-		set_function_labels_and_listeners_for_view('G');
+		setAllFunctionLabelsAndListeners();
 		set_labels();
 	}
 

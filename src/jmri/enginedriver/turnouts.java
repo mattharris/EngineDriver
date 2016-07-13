@@ -93,8 +93,10 @@ public class turnouts extends Activity implements OnGestureListener {
 			if (mainapp.to_user_names != null) { //none defined
 				int pos = 0;
 				String del = prefs.getString("DelimiterPreference", getApplicationContext().getResources().getString(R.string.prefDelimiterDefaultValue));
+				boolean hideIfNoUserName = prefs.getBoolean("HideIfNoUserNamePreference", getResources().getBoolean(R.bool.prefHideIfNoUserNameDefaultValue));
 				for (String username : mainapp.to_user_names) {
-					if (username != null && !username.equals(""))  {  //skip turnouts without usernames
+					boolean hasUserName = (username != null && !username.equals(""));
+					if (hasUserName || !hideIfNoUserName)  {  //skip turnouts without usernames if pref is set
 						//get values from global array
 						String systemname = mainapp.to_system_names[pos];
 						String currentstate = mainapp.to_states[pos];
@@ -105,13 +107,16 @@ public class turnouts extends Activity implements OnGestureListener {
 
 						//put values into temp hashmap
 						HashMap<String, String> hm = new HashMap<String, String>();
-						hm.put("to_user_name", username);
+						if (hasUserName)
+							hm.put("to_user_name", username);
+						else
+							hm.put("to_user_name", systemname);
 						hm.put("to_system_name", systemname);
 						hm.put("to_current_state_desc", currentstatedesc);
 						turnoutsFullList.add(hm);
 
 						//if location is new, add to list
-						if(del.length() > 0) {
+						if(del.length() > 0 && hasUserName) {
 							int delim = username.indexOf(del);
 							if(delim >= 0) {
 								String loc = username.substring(0, delim);
@@ -223,9 +228,6 @@ public class turnouts extends Activity implements OnGestureListener {
 						mainapp.setPowerStateButton(TuMenu);
 					}
 				}
-				break;
-			case message_type.LOCATION_DELIMITER:
-				refresh_turnout_view();
 				break;
 			case message_type.WIT_CON_RETRY:
 				witRetry(msg.obj.toString());
@@ -589,7 +591,7 @@ public class turnouts extends Activity implements OnGestureListener {
 		case R.id.preferences_mnu:
 			in=new Intent().setClass(this, preferences.class);
 			navigatingAway = true;
-			startActivity(in);
+			startActivityForResult(in,0);	// refresh view on return
 			connection_activity.overridePendingTransition(this, R.anim.fade_in, R.anim.fade_out);
 			break;
 		case R.id.about_mnu:
@@ -606,6 +608,12 @@ public class turnouts extends Activity implements OnGestureListener {
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	//handle return from menu items
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		//since we always do the same action no need to distinguish between requests
+		refresh_turnout_view();
 	}
 
 	private void disconnect() {
