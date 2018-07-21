@@ -45,8 +45,10 @@ public abstract class Flashlight {
             flashlight = new EclairFlashlight();
         } else if (sdkVersion < Build.VERSION_CODES.LOLLIPOP) {
             flashlight = new FroyoFlashlight();
-        } else {
+        } else if (sdkVersion < Build.VERSION_CODES.M){
             flashlight = new LollipopFlashlight();
+        } else {
+            flashlight = new MarshmallowFlashlight();
         }
         flashlight.init();
         Log.d("Engine_Driver", "Created new " + flashlight.getClass());
@@ -339,6 +341,58 @@ public abstract class Flashlight {
             }
 
             return chosenSize;
+        }
+    }
+
+    /**
+     * Concrete implementation for Marshmallow API 23 (and later) devices
+     *
+     * This uses the {@link android.hardware.camera2.CameraManager#setTorchMode(String, boolean)}
+     * method now available in API 23 to greatly simplify things.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private static class MarshmallowFlashlight extends Flashlight {
+
+        private static CameraManager cameraManager;
+        private static String cameraId;
+
+        @Override
+        protected void init() {
+            cameraManager = (CameraManager) flashlightContext.getSystemService(Context.CAMERA_SERVICE);
+            try {
+                cameraId = cameraManager.getCameraIdList()[0];
+            } catch (CameraAccessException|SecurityException ex) {
+                Log.e("Engine_Driver", "Error initiating camera manager: " + ex.getMessage());
+            }
+        }
+
+        @Override
+        public void teardown() {
+            // No specific teardown needed - do nothing
+        }
+
+        @Override
+        public boolean setFlashlightOn(Activity activity) {
+            try {
+                cameraManager.setTorchMode(cameraId, true);
+                Log.d("Engine_Driver", "Flashlight switched on");
+                return true;
+            } catch (CameraAccessException ex) {
+                Log.e("Engine_Driver", "Error switching on flashlight: " + ex.getMessage());
+                Toast.makeText(flashlightContext, flashlightContext.getResources().getString(R.string.toastFlashlightOnFailed), Toast.LENGTH_LONG).show();
+                return false;
+            }
+        }
+
+        @Override
+        public void setFlashlightOff() {
+            try {
+                cameraManager.setTorchMode(cameraId, false);
+                Log.d("Engine_Driver", "Flashlight switched off");
+            } catch (CameraAccessException ex) {
+                Log.e("Engine_Driver", "Error switching off flashlight: " + ex.getMessage());
+                Toast.makeText(flashlightContext, flashlightContext.getResources().getString(R.string.toastFlashlightOffFailed), Toast.LENGTH_LONG).show();
+            }
         }
     }
 }
